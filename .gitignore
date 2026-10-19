@@ -1,0 +1,50 @@
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Unity build output
+[Bb]uild/
+[Bb]uilds/
+[Ll]ocal[Bb]uilds/
+
+# Unity generated solution and project files
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity package and asset caches
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+/[Aa]ssets/[Ss]treamingAssets/*
+
+# IDE and editor files
+# Rider
+.idea
+.idea/**
+.vs/
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Crash and profiler output
+crashlytics-build.properties
+*.stackdump
