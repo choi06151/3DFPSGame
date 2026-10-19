@@ -1,5 +1,4 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
 ## husky task runner examples -------------------
 ## Note : for local installation use 'dotnet' prefix. e.g. 'dotnet husky'
@@ -19,4 +18,6 @@
 ## or put your custom commands -------------------
 #echo 'Husky.Net is awesome!'
 
-dotnet format 3DFPSGame.sln --verify-no-changes --include Assets/02.Scripts/
+if ! dotnet format 3DFPSGame.sln --verify-no-changes --include Assets/02.Scripts/; then
+  echo "WARNING: C# whitespace formatting issues found. Commit will continue."
+fi

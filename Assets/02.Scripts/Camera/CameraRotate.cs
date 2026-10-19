@@ -9,6 +9,13 @@ public class CameraRotate : MonoBehaviour
     private float _accumulationX = 0f;
 
     private float _accumulationY = 0f;
+
+    public void SyncYaw(float yaw)
+    {
+        _accumulationX = yaw;
+        transform.eulerAngles = new Vector3(_accumulationY, _accumulationX, 0f);
+    }
+
     // Update is called once per frame
     void Update()
     {
