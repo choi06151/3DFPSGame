@@ -4,7 +4,9 @@ using UnityEngine;
 public class PlayerMove : MonoBehaviour
 {
     [Header("이동속도")]
-    [SerializeField] private float _moveSpeed = 20f;
+    [SerializeField] private float _moveSpeed = 7f;
+
+    [SerializeField] private float _jumpPower = 10f;
 
     [Header("중력")]
     [SerializeField] private const float Gravity = -20f;
@@ -35,7 +37,16 @@ public class PlayerMove : MonoBehaviour
         //로컬 좌표꼐 : 한 대상을 중심
         //월드 좌표계 : 세상을 중심 
 
-        _yVelocity += Gravity * Time.deltaTime;
+        if (!_characterController.isGrounded)
+        {
+            _yVelocity += Gravity * Time.deltaTime;
+        }
+        //4.만약에 점프키를 누르면 점프를 한다
+
+        if (Input.GetButtonDown("Jump")&&_characterController.isGrounded)
+        {
+            _yVelocity = _jumpPower;
+        }
 
         var velocity = direction * _moveSpeed;
         velocity.y = _yVelocity;
