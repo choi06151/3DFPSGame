@@ -7,19 +7,29 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float _moveSpeed = 7f;
 
     [SerializeField] private float _sprintSpeed = 12;
+    
+    [SerializeField] private const float MaxStamina = 100;
     [SerializeField] private float _jumpPower = 10f;
+    [SerializeField]private const int MAXjumps = 2;
+    
+    [SerializeField] private float _staminaRecovery = 15;
+    [SerializeField] private float _sprintStaminaCost =20;
+    [SerializeField] private float _jumpStatminaCost = 20;
+
 
     [Header("중력")]
     [SerializeField] private const float Gravity = -20f;
 
     private float _yVelocity = 0;
-
+    private int _jumpCount = 0;
+    private float _stamina = 0;
     [Header("캐릭터 컨트롤러 참조")]
     [SerializeField] private CharacterController _characterController;
 
     private void Awake()
     {
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
+        _stamina = MaxStamina;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -30,6 +40,11 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        _stamina=Mathf.Min(MaxStamina, _stamina + _staminaRecovery*Time.deltaTime);
+        _stamina+=_staminaRecovery*Time.deltaTime;
+        _stamina = Mathf.Clamp(_stamina,0,MaxStamina);
+        
+        
         var h = Input.GetAxisRaw("Horizontal"); //-1 0 1 
         var v = Input.GetAxisRaw("Vertical");
 
@@ -39,19 +54,42 @@ public class PlayerMove : MonoBehaviour
         //월드 좌표계 : 세상을 중심 
 
         if (!_characterController.isGrounded)
+        {
             _yVelocity += Gravity * Time.deltaTime;
+        }
         else
+        {
             _yVelocity = -1f;
+            _jumpCount = 0;
+        }
         //4.만약에 점프키를 누르면 점프를 한다
 
-        if (Input.GetButtonDown("Jump") && _characterController.isGrounded) _yVelocity = _jumpPower;
+        if (Input.GetButtonDown("Jump") &&_jumpCount<MAXjumps&&_stamina>=_jumpStatminaCost)
+        {
+            _yVelocity = _jumpPower;
+            _jumpCount++;
+            _stamina -= _jumpStatminaCost;
+        }
 
-        var currentSpeed = Input.GetButton("Sprint") ? _sprintSpeed : _moveSpeed;
+        float RequireStamina = _sprintStaminaCost * Time.deltaTime;
+        bool wantSprint = Input.GetButton("Sprint")&&_stamina>=RequireStamina;
+        float currentSpeed;
+        if (wantSprint)
+        {
+            currentSpeed = _sprintSpeed;
+            _stamina=Mathf.Max(0,_stamina-RequireStamina);
+        }
+        else
+        {
+            currentSpeed = _moveSpeed;
+        }
+        
 
         var velocity = direction * currentSpeed;
 
         velocity.y = _yVelocity;
         //transform.position += direction * _moveSpeed * Time.deltaTime;
         _characterController.Move(velocity * Time.deltaTime);
+        Debug.Log(_stamina);
     }
 }
