@@ -6,6 +6,11 @@ public class PlayerMove : MonoBehaviour
     [Header("이동속도")]
     [SerializeField] private float _moveSpeed = 20f;
 
+    [Header("중력")]
+    [SerializeField] private const float Gravity = -20f;
+
+    private float _yVelocity = 0;
+
     [Header("캐릭터 컨트롤러 참조")]
     [SerializeField] private CharacterController _characterController;
 
@@ -30,8 +35,11 @@ public class PlayerMove : MonoBehaviour
         //로컬 좌표꼐 : 한 대상을 중심
         //월드 좌표계 : 세상을 중심 
 
-        //transform.position += direction * _moveSpeed * Time.deltaTime;
-        _characterController.Move(direction * _moveSpeed * Time.deltaTime);
+        _yVelocity += Gravity * Time.deltaTime;
 
+        var velocity = direction * _moveSpeed;
+        velocity.y = _yVelocity;
+        //transform.position += direction * _moveSpeed * Time.deltaTime;
+        _characterController.Move(velocity * Time.deltaTime);
     }
 }
