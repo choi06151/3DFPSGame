@@ -3,11 +3,15 @@ using UnityEngine;
 
 public class PlayerGunFire : MonoBehaviour
 {
+    [Header("총알 이펙트")]
     [SerializeField]private ParticleSystem _hitEffectPrefab;
     
-    private float _range = 100;
-    private float _damage = 10;
+    [Header("수치")]
+    [SerializeField] private float _range = 100;
+    [SerializeField]private float _damage = 10;
+    [SerializeField]private float _fireInterval = 0.1f;
 
+    private float _fireTimer=0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,10 +21,13 @@ public class PlayerGunFire : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        if (Input.GetButtonDown("Fire1"))
+        _fireTimer -= Time.deltaTime;
+        
+        if (Input.GetButton("Fire1")&&_fireTimer<0)
         {
+            _fireTimer = _fireInterval;
             Fire();
+            
         }
         //사용자 왼쪽 버튼 입력 받기
         // 레이를 생성하고 발사될 위치와 진행방향 설정하기
