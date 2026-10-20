@@ -6,6 +6,7 @@ public class PlayerMove : MonoBehaviour
     [Header("이동속도")]
     [SerializeField] private float _moveSpeed = 7f;
 
+    [SerializeField] private float _sprintSpeed = 12;
     [SerializeField] private float _jumpPower = 10f;
 
     [Header("중력")]
@@ -38,21 +39,17 @@ public class PlayerMove : MonoBehaviour
         //월드 좌표계 : 세상을 중심 
 
         if (!_characterController.isGrounded)
-        {
             _yVelocity += Gravity * Time.deltaTime;
-        }
         else
-        {
-            _yVelocity = 0;
-        }
+            _yVelocity = -1f;
         //4.만약에 점프키를 누르면 점프를 한다
 
-        if (Input.GetButtonDown("Jump")&&_characterController.isGrounded)
-        {
-            _yVelocity = _jumpPower;
-        }
+        if (Input.GetButtonDown("Jump") && _characterController.isGrounded) _yVelocity = _jumpPower;
 
-        var velocity = direction * _moveSpeed;
+        var currentSpeed = Input.GetButton("Sprint") ? _sprintSpeed : _moveSpeed;
+
+        var velocity = direction * currentSpeed;
+
         velocity.y = _yVelocity;
         //transform.position += direction * _moveSpeed * Time.deltaTime;
         _characterController.Move(velocity * Time.deltaTime);
