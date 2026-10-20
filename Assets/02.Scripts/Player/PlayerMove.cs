@@ -41,6 +41,10 @@ public class PlayerMove : MonoBehaviour
         {
             _yVelocity += Gravity * Time.deltaTime;
         }
+        else
+        {
+            _yVelocity = 0;
+        }
         //4.만약에 점프키를 누르면 점프를 한다
 
         if (Input.GetButtonDown("Jump")&&_characterController.isGrounded)
