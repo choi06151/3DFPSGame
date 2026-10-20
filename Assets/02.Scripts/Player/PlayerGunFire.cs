@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PlayerGunFire : MonoBehaviour
 {
+    [SerializeField]private ParticleSystem _hitEffectPrefab;
+    
     private float _range = 100;
     private float _damage = 10;
 
@@ -38,7 +40,9 @@ public class PlayerGunFire : MonoBehaviour
 
         if (isHit)
         {
-            Debug.DrawRay(ray.origin, ray.direction * _range);
+            ParticleSystem effect = Instantiate(_hitEffectPrefab);
+            effect.transform.position = hitInfo.point; 
+            effect.transform.forward = hitInfo.normal;
         }
     }
 }
