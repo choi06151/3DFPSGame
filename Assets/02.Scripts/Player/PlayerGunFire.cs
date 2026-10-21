@@ -11,7 +11,14 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField]private float _damage = 10;
     [SerializeField]private float _fireInterval = 0.1f;
 
+    [Header("탄창")]
+    [SerializeField, Min(1)] private int _magazineSize = 50;
+    [SerializeField, Min(0)] private int _ammoInMagazine = 50;
+    [SerializeField, Min(0f)] private float _reloadDuration = 1.5f;
+
     private float _fireTimer=0;
+    private float _reloadTimer;
+    private bool _isReloading;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,11 +29,29 @@ public class PlayerGunFire : MonoBehaviour
     void Update()
     {
         _fireTimer -= Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.R) && !_isReloading && _ammoInMagazine < _magazineSize)
+        {
+            _isReloading = true;
+            _reloadTimer = _reloadDuration;
+        }
+
+        if (_isReloading)
+        {
+            _reloadTimer -= Time.deltaTime;
+            if (_reloadTimer <= 0f)
+            {
+                _ammoInMagazine = _magazineSize;
+                _isReloading = false;
+            }
+            return;
+        }
         
-        if (Input.GetButton("Fire1")&&_fireTimer<0)
+        if (Input.GetButton("Fire1") && _fireTimer < 0f && _ammoInMagazine > 0)
         {
             _fireTimer = _fireInterval;
             Fire();
+            _ammoInMagazine--;
             
         }
         //사용자 왼쪽 버튼 입력 받기

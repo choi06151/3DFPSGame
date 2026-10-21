@@ -11,6 +11,14 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private const float MaxStamina = 100;
     [SerializeField] private float _jumpPower = 10f;
     [SerializeField]private const int MAXjumps = 2;
+
+    [Header("점프 조작감")]
+    [SerializeField, Min(0f)] private float _jumpBufferTime = 0.15f;
+    [SerializeField, Min(0f)] private float _coyoteTime = 0.12f;
+    [SerializeField, Min(1f)] private float _fallGravityMultiplier = 2f;
+    [SerializeField, Min(1f)] private float _jumpCutGravityMultiplier = 2.5f;
+    [SerializeField, Min(0f)] private float _apexGravityMultiplier = 0.7f;
+    [SerializeField, Min(0f)] private float _apexVelocityThreshold = 2f;
     
     [SerializeField] private float _staminaRecovery = 15;
     [SerializeField] private float _sprintStaminaCost =20;
@@ -23,6 +31,8 @@ public class PlayerMove : MonoBehaviour
     private float _yVelocity = 0;
     private int _jumpCount = 0;
     private float _stamina = 0;
+    private float _jumpBufferCounter = 0f;
+    private float _coyoteCounter = 0f;
     [Header("캐릭터 컨트롤러 참조")]
     [SerializeField] private CharacterController _characterController;
 
@@ -40,9 +50,14 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        float deltaTime = Time.deltaTime;
         _stamina=Mathf.Min(MaxStamina, _stamina + _staminaRecovery*Time.deltaTime);
-        _stamina+=_staminaRecovery*Time.deltaTime;
         _stamina = Mathf.Clamp(_stamina,0,MaxStamina);
+
+        if (Input.GetButtonDown("Jump"))
+            _jumpBufferCounter = _jumpBufferTime;
+        else
+            _jumpBufferCounter = Mathf.Max(0f, _jumpBufferCounter - deltaTime);
         
         
         var h = Input.GetAxisRaw("Horizontal"); //-1 0 1 
@@ -53,22 +68,40 @@ public class PlayerMove : MonoBehaviour
         //로컬 좌표꼐 : 한 대상을 중심
         //월드 좌표계 : 세상을 중심 
 
-        if (!_characterController.isGrounded)
-        {
-            _yVelocity += Gravity * Time.deltaTime;
-        }
-        else
+        bool isGrounded = _characterController.isGrounded;
+        if (isGrounded)
         {
             _yVelocity = -1f;
             _jumpCount = 0;
+            _coyoteCounter = _coyoteTime;
         }
-        //4.만약에 점프키를 누르면 점프를 한다
+        else
+        {
+            _coyoteCounter = Mathf.Max(0f, _coyoteCounter - deltaTime);
+        }
 
-        if (Input.GetButtonDown("Jump") &&_jumpCount<MAXjumps&&_stamina>=_jumpStatminaCost)
+        bool canGroundJump = _jumpCount == 0 && (isGrounded || _coyoteCounter > 0f);
+        bool canDoubleJump = _jumpCount > 0 && _jumpCount < MAXjumps;
+        if (_jumpBufferCounter > 0f && (canGroundJump || canDoubleJump) && _stamina >= _jumpStatminaCost)
         {
             _yVelocity = _jumpPower;
             _jumpCount++;
             _stamina -= _jumpStatminaCost;
+            _jumpBufferCounter = 0f;
+            _coyoteCounter = 0f;
+        }
+
+        if (!isGrounded || _yVelocity > 0f)
+        {
+            float gravityMultiplier = 1f;
+            if (_yVelocity < 0f)
+                gravityMultiplier = _fallGravityMultiplier;
+            else if (_yVelocity < _apexVelocityThreshold)
+                gravityMultiplier = _apexGravityMultiplier;
+            else if (!Input.GetButton("Jump"))
+                gravityMultiplier = _jumpCutGravityMultiplier;
+
+            _yVelocity += Gravity * gravityMultiplier * deltaTime;
         }
 
         float RequireStamina = _sprintStaminaCost * Time.deltaTime;
@@ -89,7 +122,6 @@ public class PlayerMove : MonoBehaviour
 
         velocity.y = _yVelocity;
         //transform.position += direction * _moveSpeed * Time.deltaTime;
-        _characterController.Move(velocity * Time.deltaTime);
-        Debug.Log(_stamina);
+        _characterController.Move(velocity * deltaTime);
     }
 }
