@@ -75,6 +75,11 @@ public class PlayerGunFire : MonoBehaviour
             ParticleSystem effect = Instantiate(_hitEffectPrefab);
             effect.transform.position = hitInfo.point; 
             effect.transform.forward = hitInfo.normal;
+
+            if (hitInfo.collider.TryGetComponent(out Zombie zombie))
+            {
+                zombie.TakeDamage(_damage);
+            }
         }
     }
 }
