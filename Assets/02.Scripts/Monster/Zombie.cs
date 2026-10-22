@@ -6,12 +6,12 @@ public class Zombie : MonoBehaviour
 {
     public enum ZombieState
     {
-        Idle,
+        Patrol,
         Trace,Combat
         ,Attack,Hit,Comeback
     }
     
-    private ZombieState _state=ZombieState.Idle;
+    private ZombieState _state=ZombieState.Patrol;
 
     [Header("스탯")]
     [SerializeField] private float _detectDistance = 8;
@@ -20,6 +20,7 @@ public class Zombie : MonoBehaviour
     [SerializeField] private float _attackInterval = 1.2f;
     
     [SerializeField] private float _moveSpeed=5;
+    [SerializeField] private float _patrolDistance = 3f;
     [SerializeField] private float _health = 30f;
     [SerializeField]private CharacterController _controller;
     [SerializeField]private GameObject _player;
@@ -27,6 +28,8 @@ public class Zombie : MonoBehaviour
     private float _attackTimer = 0f;
     
     private Vector3 _startPosition;
+    private Vector3 _patrolCenter;
+    private Vector3 _patrolTarget;
     private void Awake()
     {
         _controller=GetComponent<CharacterController>();
@@ -35,6 +38,9 @@ public class Zombie : MonoBehaviour
     void Start()
     {
         _player=GameObject.FindGameObjectWithTag("Player");
+        _patrolCenter = transform.position;
+        _startPosition = _patrolCenter;
+        _patrolTarget = _patrolCenter + transform.forward * _patrolDistance;
     }
 
     // Update is called once per frame
@@ -42,9 +48,9 @@ public class Zombie : MonoBehaviour
     {
         switch (_state)
         {
-            case ZombieState.Idle:
+            case ZombieState.Patrol:
             {
-                Idle();
+                Patrol();
                 break;
             }
             case ZombieState.Trace:
@@ -79,15 +85,31 @@ public class Zombie : MonoBehaviour
         
     }
 
-    private void Idle()
+    private void Patrol()
     {
         float distance=Vector3.Distance(transform.position,_player.transform.position);
         if (distance <= _detectDistance)
         {
             Debug.Log($"{_state}->Trace");
-                _startPosition=transform.position;
+            _startPosition = transform.position;
             _state = ZombieState.Trace;
+            return;
         }
+
+        Vector3 direction = _patrolTarget - transform.position;
+        direction.y = 0f;
+        if (direction.magnitude < 0.2f)
+        {
+            _patrolTarget = _patrolTarget == _patrolCenter
+                ? _patrolCenter + transform.forward * _patrolDistance
+                : _patrolCenter;
+            direction = _patrolTarget - transform.position;
+            direction.y = 0f;
+        }
+
+        direction.Normalize();
+        transform.forward = direction;
+        _controller.SimpleMove(direction * _moveSpeed);
     }
 
     private void Trace()
@@ -119,9 +141,9 @@ public class Zombie : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, _startPosition) < 1f)
         {
-            Debug.Log($"{_state}->Idle");
+            Debug.Log($"{_state}->Patrol");
 
-            _state = ZombieState.Idle;
+            _state = ZombieState.Patrol;
             return;
         }
         
