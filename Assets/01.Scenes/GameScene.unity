@@ -1183,7 +1183,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBombFire
   _firePoint: {fileID: 17112373}
   _bombPrefab: {fileID: 4191590208541557336, guid: 38d9f0f7e4dbecd4f956bc2fd31a2fe7, type: 3}
-  _throwPower: 10
+  _minThrowPower: 5
+  _maxThrowPower: 20
+  _chargeDuration: 2
 --- !u!1 &1064827425
 GameObject:
   m_ObjectHideFlags: 0

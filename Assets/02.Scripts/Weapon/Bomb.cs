@@ -31,7 +31,7 @@ public class Bomb : MonoBehaviour
         if (_rigidbody == null)
             _rigidbody = GetComponent<Rigidbody>();
 
-        _rigidbody.velocity = Vector3.zero;
+        _rigidbody.linearVelocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
         _rigidbody.AddForce(direction * power, ForceMode.Impulse);
     }
@@ -49,7 +49,7 @@ public class Bomb : MonoBehaviour
             _explosionEffect.Play(true);
         }
 
-        _rigidbody.velocity = Vector3.zero;
+        _rigidbody.linearVelocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
         _returnToPool?.Invoke(this);
     }
