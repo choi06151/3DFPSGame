@@ -4,6 +4,8 @@ using UnityEngine;
 public class Bomb : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _explosionEffectPrefab;
+    [SerializeField] private float _explosionDamage=4.5f;
+    [SerializeField] private float _explosionRange=3.5f;
 
     private Action<Bomb> _returnToPool;
     private Rigidbody _rigidbody;
@@ -49,8 +51,34 @@ public class Bomb : MonoBehaviour
             _explosionEffect.Play(true);
         }
 
+
+        ApplyAreaDamage();
+        
         _rigidbody.linearVelocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
         _returnToPool?.Invoke(this);
     }
+    
+    
+    private void ApplyAreaDamage()
+    {
+        var overlapSphere=Physics.OverlapSphere(transform.position, _explosionRange, LayerMask.GetMask("Drum","Monster"));
+
+        foreach (var overlap in overlapSphere)
+        {
+            Vector3 hitPoint = overlap.ClosestPoint(transform.position);
+            Vector3 hitNormal = hitPoint == transform.position
+                ? Vector3.up
+                : (hitPoint - transform.position).normalized;
+            var damageInfo = new DamageInfo
+            {
+                Value = _explosionDamage,
+                HitPoint = hitPoint,
+                HitNormal = hitNormal
+            };
+
+            overlap.GetComponentInParent<IDamageAble>()?.TakeDamage(damageInfo);
+        }
+    }
+    
 }

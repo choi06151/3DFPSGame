@@ -19,13 +19,20 @@ public class Zombie : MonoBehaviour,IDamageAble
     [SerializeField] private float _attackRange = 2f;
     [SerializeField] private float _attackInterval = 1.2f;
     
+    [Header("이펙트")]
+    [SerializeField]private GameObject _bloodSprayPrefab;  
+    
     [SerializeField] private float _moveSpeed=5;
     [SerializeField] private float _patrolDistance = 3f;
+    [SerializeField] private float _maxHealth = 30f;
+    public float MaxHealth=>_maxHealth;
     [SerializeField] private float _health = 30f;
+    public float Health=>_health;
     [SerializeField]private CharacterController _controller;
     [SerializeField]private GameObject _player;
 
     private float _attackTimer = 0f;
+    private bool _isDead;
     
     private Vector3 _startPosition;
     private Vector3 _patrolCenter;
@@ -177,13 +184,26 @@ public class Zombie : MonoBehaviour,IDamageAble
         }
     }
     
-    public void TakeDamage(float damage)
+    public void TakeDamage(DamageInfo damageInfo)
     {
-        _health -= damage;
+        if (_isDead || damageInfo.Value <= 0f)
+            return;
 
+        _health -= damageInfo.Value;
+
+        if (_bloodSprayPrefab != null)
+        {
+            GameObject spray = Instantiate(_bloodSprayPrefab, damageInfo.HitPoint,
+                damageInfo.HitNormal.sqrMagnitude > 0f
+                    ? Quaternion.LookRotation(damageInfo.HitNormal)
+                    : Quaternion.identity);
+        }
+        
         if (_health <= 0)
         {
+            _isDead = true;
             StartCoroutine(Death_Coroutine());
+            return;
         }
         
         //잠깐 멈칫 하고싶다
@@ -197,6 +217,8 @@ public class Zombie : MonoBehaviour,IDamageAble
     private IEnumerator Hit_Coroutine()
     {
         yield return new WaitForSeconds(0.5f);
+        if (_isDead)
+            yield break;
         Debug.Log($"{_state}->Trace");
         _state = ZombieState.Trace;
 

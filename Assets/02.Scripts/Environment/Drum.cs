@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -21,6 +19,7 @@ public class Drum : MonoBehaviour,IDamageAble
     [SerializeField] private float _explostionDelay = 3f;
 
     private Rigidbody _rigidbody;
+    private bool _isExploding;
 
 
     private void Awake()
@@ -28,13 +27,14 @@ public class Drum : MonoBehaviour,IDamageAble
         _rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(DamageInfo damageInfo)
     {
-        if (_health <= 0)
+        if (_isExploding || damageInfo.Value <= 0f)
             return;
-        _health -= damage;
+        _health -= damageInfo.Value;
         if (_health <= 0)
         {
+            _isExploding = true;
             StartCoroutine(Explode());
 
         }
@@ -44,7 +44,8 @@ public class Drum : MonoBehaviour,IDamageAble
     {
         yield return new WaitForSeconds(_explostionDelay);
 
-        Instantiate(_explosionEffectPrefab, transform.position, Quaternion.identity);
+        if (_explosionEffectPrefab != null)
+            Instantiate(_explosionEffectPrefab, transform.position, Quaternion.identity);
         _rigidbody.AddForce(Vector3.up * _explodePower, ForceMode.Impulse);
         _rigidbody.AddTorque(UnityEngine.Random.insideUnitSphere * _spinPower, ForceMode.Impulse);
         
@@ -61,9 +62,18 @@ public class Drum : MonoBehaviour,IDamageAble
 
         foreach (var overlap in overlapSphere)
         {
-            overlap.GetComponent<Drum>()?.TakeDamage(_explodedamage);
-            overlap.GetComponent<Zombie>()?.TakeDamage(_explodedamage);
+            Vector3 hitPoint = overlap.ClosestPoint(transform.position);
+            Vector3 hitNormal = hitPoint == transform.position
+                ? Vector3.up
+                : (hitPoint - transform.position).normalized;
+            var damageInfo = new DamageInfo
+            {
+                Value = _explodedamage,
+                HitPoint = hitPoint,
+                HitNormal = hitNormal
+            };
 
+            overlap.GetComponentInParent<IDamageAble>()?.TakeDamage(damageInfo);
         }
     }
 

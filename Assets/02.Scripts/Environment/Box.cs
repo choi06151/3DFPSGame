@@ -1,21 +1,16 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class Box : MonoBehaviour,IDamageAble
+public class Box : MonoBehaviour, IDamageAble
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField, Min(1f)] private float _health = 10f;
 
-    // Update is called once per frame
-    void Update()
+    public void TakeDamage(DamageInfo damageInfo)
     {
-        
-    }
+        if (_health <= 0f || damageInfo.Value <= 0f)
+            return;
 
-    public void TakeDamage(float damage)
-    {
-        
+        _health -= damageInfo.Value;
+        if (_health <= 0f)
+            Destroy(gameObject);
     }
 }

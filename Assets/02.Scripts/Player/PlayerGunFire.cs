@@ -62,7 +62,11 @@ public class PlayerGunFire : MonoBehaviour
 
     private void Fire()
     {
-        Transform cameraTransform = Camera.main.transform;
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+            return;
+
+        Transform cameraTransform = mainCamera.transform;
         
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         
@@ -72,14 +76,19 @@ public class PlayerGunFire : MonoBehaviour
 
         if (isHit)
         {
-            ParticleSystem effect = Instantiate(_hitEffectPrefab);
-            effect.transform.position = hitInfo.point; 
-            effect.transform.forward = hitInfo.normal;
+            if (_hitEffectPrefab != null)
+                Instantiate(_hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
 
-
-            if (hitInfo.collider.TryGetComponent(out IDamageAble damageAble))
+            var damageInfo = new DamageInfo
             {
-                damageAble.TakeDamage(_damage);
+                Value = _damage,
+                HitPoint = hitInfo.point,
+                HitNormal = hitInfo.normal
+            };
+            
+            if (hitInfo.collider.GetComponentInParent<IDamageAble>() is IDamageAble damageAble)
+            {
+                damageAble.TakeDamage(damageInfo);
             }
             
         }

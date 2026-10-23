@@ -8,7 +8,13 @@ public class PlayerMove : MonoBehaviour
 
     [SerializeField] private float _sprintSpeed = 12;
     
+    [SerializeField] private const float MaxHp = 100;
+    public float GetMaxHp=>MaxHp;
+ 
+    
+    
     [SerializeField] private const float MaxStamina = 100;
+    public float GetMaxStamina=>MaxStamina;
     [SerializeField] private float _jumpPower = 10f;
     [SerializeField]private const int MAXjumps = 2;
 
@@ -30,7 +36,10 @@ public class PlayerMove : MonoBehaviour
 
     private float _yVelocity = 0;
     private int _jumpCount = 0;
+    private float _hp=0;
+    public float HP => _hp;
     private float _stamina = 0;
+    public float Stamina=>_stamina;
     private float _jumpBufferCounter = 0f;
     private float _coyoteCounter = 0f;
     [Header("캐릭터 컨트롤러 참조")]
@@ -40,6 +49,8 @@ public class PlayerMove : MonoBehaviour
     {
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
         _stamina = MaxStamina;
+        _hp=MaxHp;
+ 
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
