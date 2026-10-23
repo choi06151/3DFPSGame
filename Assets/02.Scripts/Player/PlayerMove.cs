@@ -3,20 +3,7 @@ using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
 {
-    [Header("이동속도")]
-    [SerializeField] private float _moveSpeed = 7f;
-
-    [SerializeField] private float _sprintSpeed = 12;
-    
-    [SerializeField] private const float MaxHp = 100;
-    public float GetMaxHp=>MaxHp;
- 
-    
-    
-    [SerializeField] private const float MaxStamina = 100;
-    public float GetMaxStamina=>MaxStamina;
-    [SerializeField] private float _jumpPower = 10f;
-    [SerializeField]private const int MAXjumps = 2;
+   
 
     [Header("점프 조작감")]
     [SerializeField, Min(0f)] private float _jumpBufferTime = 0.15f;
@@ -36,8 +23,7 @@ public class PlayerMove : MonoBehaviour
 
     private float _yVelocity = 0;
     private int _jumpCount = 0;
-    private float _hp=0;
-    public float HP => _hp;
+
     private float _stamina = 0;
     public float Stamina=>_stamina;
     private float _jumpBufferCounter = 0f;
@@ -48,8 +34,7 @@ public class PlayerMove : MonoBehaviour
     private void Awake()
     {
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
-        _stamina = MaxStamina;
-        _hp=MaxHp;
+        _stamina = PlayerStat.MaxStamina;
  
     }
 
@@ -61,9 +46,10 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        if (GameManager.Instance.GameState != GameState.Playing)
+            return;
         float deltaTime = Time.deltaTime;
-        _stamina=Mathf.Min(MaxStamina, _stamina + _staminaRecovery*Time.deltaTime);
-        _stamina = Mathf.Clamp(_stamina,0,MaxStamina);
+        _stamina = Mathf.Min(PlayerStat.MaxStamina, _stamina + _staminaRecovery * deltaTime);
 
         if (Input.GetButtonDown("Jump"))
             _jumpBufferCounter = _jumpBufferTime;
@@ -92,10 +78,10 @@ public class PlayerMove : MonoBehaviour
         }
 
         bool canGroundJump = _jumpCount == 0 && (isGrounded || _coyoteCounter > 0f);
-        bool canDoubleJump = _jumpCount > 0 && _jumpCount < MAXjumps;
+        bool canDoubleJump = _jumpCount > 0 && _jumpCount < PlayerStat.MaxJumps;
         if (_jumpBufferCounter > 0f && (canGroundJump || canDoubleJump) && _stamina >= _jumpStatminaCost)
         {
-            _yVelocity = _jumpPower;
+            _yVelocity = PlayerStat.JumpPower;
             _jumpCount++;
             _stamina -= _jumpStatminaCost;
             _jumpBufferCounter = 0f;
@@ -120,12 +106,12 @@ public class PlayerMove : MonoBehaviour
         float currentSpeed;
         if (wantSprint)
         {
-            currentSpeed = _sprintSpeed;
+            currentSpeed = PlayerStat.SprintSpeed;
             _stamina=Mathf.Max(0,_stamina-RequireStamina);
         }
         else
         {
-            currentSpeed = _moveSpeed;
+            currentSpeed = PlayerStat.MoveSpeed;
         }
         
 

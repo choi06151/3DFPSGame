@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Net.WebSockets;
 using UnityEngine;
 
 public class Zombie : MonoBehaviour,IDamageAble
@@ -16,6 +17,8 @@ public class Zombie : MonoBehaviour,IDamageAble
     [Header("스탯")]
     [SerializeField] private float _detectDistance = 8;
     [SerializeField] private float _comebackDistance = 12;
+    [SerializeField] private float _attackDamage = 10f;
+
     [SerializeField] private float _attackRange = 2f;
     [SerializeField] private float _attackInterval = 1.2f;
     
@@ -53,6 +56,10 @@ public class Zombie : MonoBehaviour,IDamageAble
     // Update is called once per frame
     void Update()
     {
+        
+        if (GameManager.Instance.GameState != GameState.Playing)
+            return;
+        
         switch (_state)
         {
             case ZombieState.Patrol:
@@ -178,6 +185,14 @@ public class Zombie : MonoBehaviour,IDamageAble
         _attackTimer+=Time.deltaTime;
         if (_attackTimer >= _attackInterval)
         {
+            DamageInfo info = new DamageInfo();
+            {
+                info.Value = _attackDamage;
+                
+            }
+            
+            _player.GetComponent<IDamageAble>().TakeDamage(info);
+            
             //플레이어 공격
             _attackTimer = 0;
             

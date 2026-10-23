@@ -29,6 +29,8 @@ public class PlayerBombFire : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance.GameState != GameState.Playing)
+            return;
         if (_bombsThrown >= MaxBombCount)
         {
             _isCharging = false;

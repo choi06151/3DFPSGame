@@ -8,7 +8,6 @@ public class PlayerGunFire : MonoBehaviour
     
     [Header("수치")]
     [SerializeField] private float _range = 100;
-    [SerializeField]private float _damage = 10;
     [SerializeField]private float _fireInterval = 0.1f;
 
     [Header("탄창")]
@@ -28,6 +27,9 @@ public class PlayerGunFire : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (GameManager.Instance.GameState != GameState.Playing)
+            return;
         _fireTimer -= Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.R) && !_isReloading && _ammoInMagazine < _magazineSize)
@@ -81,7 +83,7 @@ public class PlayerGunFire : MonoBehaviour
 
             var damageInfo = new DamageInfo
             {
-                Value = _damage,
+                Value = PlayerStat.GunDamage,
                 HitPoint = hitInfo.point,
                 HitNormal = hitInfo.normal
             };
