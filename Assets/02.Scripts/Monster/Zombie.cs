@@ -40,6 +40,10 @@ public class Zombie : MonoBehaviour,IDamageAble
     private Vector3 _startPosition;
     private Vector3 _patrolCenter;
     private Vector3 _patrolTarget;
+
+    public event Action OnDamged;
+    public event Action OnDestroy;
+
     private void Awake()
     {
         _controller=GetComponent<CharacterController>();
@@ -224,6 +228,8 @@ public class Zombie : MonoBehaviour,IDamageAble
         //잠깐 멈칫 하고싶다
         Debug.Log($"{_state}->Hit");
 
+        
+        OnDamged.Invoke();
         _state=ZombieState.Hit;
         StartCoroutine(Hit_Coroutine());
 
@@ -242,6 +248,7 @@ public class Zombie : MonoBehaviour,IDamageAble
     {
         _controller.enabled = false;
         yield return new WaitForSeconds(0.5f);
+        OnDestroy.Invoke();
         Destroy(gameObject);
 
     }

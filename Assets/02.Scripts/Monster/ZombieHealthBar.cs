@@ -11,24 +11,16 @@ public class ZombieHealthBar : MonoBehaviour
     {
         
         _zombie = GetComponent<Zombie>();
-        
+        _zombie.OnDamged+=RefreshHealthBar;
     }
     private void LateUpdate()
     {
-        _healthBar.value = _zombie.Health/_zombie.MaxHealth;
-        
         //빌보드 : 체력바가 카메라를 쳐다보게한다
         _healthBar.transform.forward=Camera.main.transform.forward;
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    public void RefreshHealthBar()
     {
-        
+        _healthBar.value = _zombie.Health/_zombie.MaxHealth;
     }
 }
