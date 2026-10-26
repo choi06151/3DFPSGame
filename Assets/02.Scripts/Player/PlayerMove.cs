@@ -31,9 +31,12 @@ public class PlayerMove : MonoBehaviour
     [Header("캐릭터 컨트롤러 참조")]
     [SerializeField] private CharacterController _characterController;
 
+    private Transform _movementCamera;
+
     private void Awake()
     {
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
+        if (Camera.main != null) _movementCamera = Camera.main.transform;
         _stamina = PlayerStat.MaxStamina;
  
     }
@@ -60,8 +63,17 @@ public class PlayerMove : MonoBehaviour
         var h = Input.GetAxisRaw("Horizontal"); //-1 0 1 
         var v = Input.GetAxisRaw("Vertical");
 
-        var direction = new Vector3(h, 0, v).normalized;
-        direction = transform.TransformDirection(direction);
+        var input = new Vector2(h, v);
+        if (input.sqrMagnitude > 1f) input.Normalize();
+
+        var referenceForward = _movementCamera != null ? _movementCamera.forward : transform.forward;
+        var forward = Vector3.ProjectOnPlane(referenceForward, Vector3.up);
+        if (forward.sqrMagnitude < 0.0001f)
+            forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
+        forward.Normalize();
+
+        var right = Vector3.Cross(Vector3.up, forward).normalized;
+        var direction = right * input.x + forward * input.y;
         //로컬 좌표꼐 : 한 대상을 중심
         //월드 좌표계 : 세상을 중심 
 

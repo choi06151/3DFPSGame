@@ -6,11 +6,25 @@ public class CursorManager : MonoBehaviour
     {
         LockCursor();
     }
+
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            UnlockCursor();
+        }
+        else
+        {
+            LockCursor();
+        }
+    }
+
     private void LockCursor()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
+
     private void UnlockCursor()
     {
         Cursor.visible = true;
