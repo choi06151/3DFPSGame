@@ -1,20 +1,18 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(HurtUIEffect))]
 public class Player : MonoBehaviour, IDamageAble
 {
-    [SerializeField] private HurtUIEffect _hurtUIEffect;
     [SerializeField] private Slider _healthBar;
 
     private float _hp;
     public float HP => _hp;
-
+    public event Action OnDamaged;
     private void Awake()
     {
         _hp = PlayerStat.MaxHealth;
-        if (_hurtUIEffect == null)
-            _hurtUIEffect = GetComponent<HurtUIEffect>();
         UpdateHealthBar();
     }
 
@@ -25,9 +23,8 @@ public class Player : MonoBehaviour, IDamageAble
 
         _hp -= damageInfo.Value;
         _hp = Mathf.Max(0f, _hp);
-        _hurtUIEffect?.Play();
         UpdateHealthBar();
-
+        OnDamaged.Invoke();
         if (_hp <= 0f)
         {
             Debug.Log("Player is dead");

@@ -28,6 +28,7 @@ public class PlayerMove : MonoBehaviour
     public float Stamina=>_stamina;
     private float _jumpBufferCounter = 0f;
     private float _coyoteCounter = 0f;
+    public event Action OnStaminaUse;
     [Header("캐릭터 컨트롤러 참조")]
     [SerializeField] private CharacterController _characterController;
 
@@ -98,6 +99,7 @@ public class PlayerMove : MonoBehaviour
             _stamina -= _jumpStatminaCost;
             _jumpBufferCounter = 0f;
             _coyoteCounter = 0f;
+            OnStaminaUse.Invoke();
         }
 
         if (!isGrounded || _yVelocity > 0f)
@@ -120,6 +122,7 @@ public class PlayerMove : MonoBehaviour
         {
             currentSpeed = PlayerStat.SprintSpeed;
             _stamina=Mathf.Max(0,_stamina-RequireStamina);
+            OnStaminaUse.Invoke();
         }
         else
         {

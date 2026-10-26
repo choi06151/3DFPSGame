@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class HurtUIEffect : MonoBehaviour
 {
+    [SerializeField] private Player _player;
     [SerializeField] private Image _hurtImage;
     [SerializeField, Min(0f)] private float _fadeInDuration = 0.1f;
     [SerializeField, Min(0f)] private float _holdDuration = 0.15f;
@@ -14,6 +15,8 @@ public class HurtUIEffect : MonoBehaviour
 
     private void Awake()
     {
+        _player=FindAnyObjectByType<Player>();
+        _player.OnDamaged += Play;
         if (_hurtImage == null)
             _hurtImage = GetComponent<Image>();
 
