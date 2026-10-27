@@ -1,10 +1,15 @@
-using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerGunFire : MonoBehaviour
 {
     [Header("총알 이펙트")]
     [SerializeField]private ParticleSystem _hitEffectPrefab;
+
+    [Header("탄도 표시")]
+    [SerializeField, Min(0.01f)] private float _trajectoryDuration = 0.2f;
+    [SerializeField, Min(0.001f)] private float _trajectoryWidth = 0.025f;
+    [SerializeField] private Color _trajectoryColor = new Color(1f, 0.85f, 0.35f, 1f);
     
     [Header("수치")]
     [SerializeField] private float _range = 100;
@@ -18,6 +23,22 @@ public class PlayerGunFire : MonoBehaviour
     private float _fireTimer=0;
     private float _reloadTimer;
     private bool _isReloading;
+    private Material _trajectoryMaterial;
+
+    private void Awake()
+    {
+        var shader = Shader.Find("Sprites/Default");
+        if (shader != null)
+            _trajectoryMaterial = new Material(shader);
+        else
+            Debug.LogWarning("PlayerGunFire: 탄도 표시용 셰이더를 찾지 못했습니다.", this);
+    }
+
+    private void OnDestroy()
+    {
+        if (_trajectoryMaterial != null)
+            Destroy(_trajectoryMaterial);
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -75,6 +96,8 @@ public class PlayerGunFire : MonoBehaviour
         RaycastHit hitInfo=new RaycastHit();
         
         bool isHit=Physics.Raycast(ray, out hitInfo,_range);
+        Vector3 endPoint = isHit ? hitInfo.point : ray.GetPoint(_range);
+        StartCoroutine(ShowTrajectory(ray.origin, endPoint));
 
         if (isHit)
         {
@@ -94,5 +117,38 @@ public class PlayerGunFire : MonoBehaviour
             }
             
         }
+    }
+
+    private IEnumerator ShowTrajectory(Vector3 startPoint, Vector3 endPoint)
+    {
+        if (_trajectoryMaterial == null) yield break;
+
+        var lineObject = new GameObject("BulletTrajectory");
+        var line = lineObject.AddComponent<LineRenderer>();
+        line.useWorldSpace = true;
+        line.positionCount = 2;
+        line.SetPosition(0, startPoint);
+        line.SetPosition(1, endPoint);
+        line.startWidth = _trajectoryWidth;
+        line.endWidth = _trajectoryWidth;
+        line.sharedMaterial = _trajectoryMaterial;
+        line.startColor = _trajectoryColor;
+        line.endColor = _trajectoryColor;
+        line.numCapVertices = 2;
+
+        float duration = Mathf.Max(0.01f, _trajectoryDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = 1f - Mathf.Clamp01(elapsed / duration);
+            var color = _trajectoryColor;
+            color.a *= alpha;
+            line.startColor = color;
+            line.endColor = color;
+            yield return null;
+        }
+
+        Destroy(lineObject);
     }
 }

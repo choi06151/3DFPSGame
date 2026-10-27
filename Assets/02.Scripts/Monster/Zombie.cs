@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Net.WebSockets;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Zombie : MonoBehaviour,IDamageAble
 {
@@ -31,12 +32,12 @@ public class Zombie : MonoBehaviour,IDamageAble
     public float MaxHealth=>_maxHealth;
     [SerializeField] private float _health = 30f;
     public float Health=>_health;
-    [SerializeField]private CharacterController _controller;
     [SerializeField]private GameObject _player;
 
     private float _attackTimer = 0f;
     private bool _isDead;
-    
+
+    private NavMeshAgent _agent;
     private Vector3 _startPosition;
     private Vector3 _patrolCenter;
     private Vector3 _patrolTarget;
@@ -46,11 +47,12 @@ public class Zombie : MonoBehaviour,IDamageAble
 
     private void Awake()
     {
-        _controller=GetComponent<CharacterController>();
     }
 
     void Start()
     {
+         _agent=GetComponent<NavMeshAgent>();
+         _agent.speed=_moveSpeed;
         _player=GameObject.FindGameObjectWithTag("Player");
         _patrolCenter = transform.position;
         _startPosition = _patrolCenter;
@@ -113,21 +115,8 @@ public class Zombie : MonoBehaviour,IDamageAble
             _state = ZombieState.Trace;
             return;
         }
-
-        Vector3 direction = _patrolTarget - transform.position;
-        direction.y = 0f;
-        if (direction.magnitude < 0.2f)
-        {
-            _patrolTarget = _patrolTarget == _patrolCenter
-                ? _patrolCenter + transform.forward * _patrolDistance
-                : _patrolCenter;
-            direction = _patrolTarget - transform.position;
-            direction.y = 0f;
-        }
-
-        direction.Normalize();
-        transform.forward = direction;
-        _controller.SimpleMove(direction * _moveSpeed);
+        
+        _agent.SetDestination(_patrolTarget);
     }
 
     private void Trace()
@@ -147,12 +136,9 @@ public class Zombie : MonoBehaviour,IDamageAble
             return;
         }
         
-        Vector3 direction=_player.transform.position-transform.position;
-        direction.y = 0f;
-        direction.Normalize();
         
-        transform.forward=direction;
-        _controller.SimpleMove(direction*_moveSpeed);
+        _agent.SetDestination(_player.transform.position);
+
     }
 
     public void Comeback()
@@ -164,14 +150,9 @@ public class Zombie : MonoBehaviour,IDamageAble
             _state = ZombieState.Patrol;
             return;
         }
-        
-        
-        Vector3 direction=_startPosition-transform.position;
-        direction.y = 0f;
-        direction.Normalize();
-        
-        transform.forward=direction;
-        _controller.SimpleMove(direction*_moveSpeed);
+
+
+        _agent.SetDestination(_startPosition);
     }
 
     public void Attack()
@@ -229,7 +210,7 @@ public class Zombie : MonoBehaviour,IDamageAble
         Debug.Log($"{_state}->Hit");
 
         
-        OnDamged.Invoke();
+        OnDamged?.Invoke();
         _state=ZombieState.Hit;
         StartCoroutine(Hit_Coroutine());
 
@@ -246,9 +227,8 @@ public class Zombie : MonoBehaviour,IDamageAble
     }
     private IEnumerator Death_Coroutine()
     {
-        _controller.enabled = false;
         yield return new WaitForSeconds(0.5f);
-        OnDestroy.Invoke();
+        OnDestroy?.Invoke();
         Destroy(gameObject);
 
     }

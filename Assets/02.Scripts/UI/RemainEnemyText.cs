@@ -10,21 +10,33 @@ public class RemainEnemyText : MonoBehaviour
 
     private void Awake()
     {
-
+        _remainEnemyCount = 0;
         var zombies=FindObjectsByType<Zombie>(FindObjectsSortMode.None);
 
         foreach (var zombie in zombies)
-        {
-            _remainEnemyCount++;
-            zombie.OnDestroy += RefreshText;
-        }
-        _text.text="남은 적 : "+$"{_remainEnemyCount}";
+            RegisterZombie(zombie);
 
+        RefreshText();
+    }
+
+    public void RegisterZombie(Zombie zombie)
+    {
+        if (zombie == null) return;
+
+        _remainEnemyCount++;
+        zombie.OnDestroy += HandleZombieDestroyed;
+        RefreshText();
     }
     
+    private void HandleZombieDestroyed()
+    {
+        _remainEnemyCount = Mathf.Max(0, _remainEnemyCount - 1);
+        RefreshText();
+    }
+
     private void RefreshText()
     {
-        _remainEnemyCount--;
-        _text.text="남은 적 : "+$"{_remainEnemyCount}";
+        if (_text != null)
+            _text.text = $"남은 적 : {_remainEnemyCount}";
     }
 }
