@@ -117,7 +117,10 @@ public class PlayerGunFire : MonoBehaviour
         if (isHit)
         {
             if (_hitEffectPrefab != null)
-                Instantiate(_hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+            {
+                ParticleSystem hitEffect = Instantiate(_hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+                hitEffect.Play();
+            }
 
             var damageInfo = new DamageInfo
             {

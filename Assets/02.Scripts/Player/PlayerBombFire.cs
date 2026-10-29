@@ -15,7 +15,7 @@ public class PlayerBombFire : MonoBehaviour
     [SerializeField] private float _minThrowPower = 5f;
     [SerializeField] private float _maxThrowPower = 20f;
     [SerializeField] private float _chargeDuration = 2f;
-
+    [SerializeField] private Animator _animator;
 
 
     
@@ -78,6 +78,8 @@ public class PlayerBombFire : MonoBehaviour
         if (_bombPool.Count == 0 || _firePoint == null || Camera.main == null)
             return;
 
+        
+        _animator.SetTrigger("granade");
         Bomb bomb = _bombPool.Dequeue();
         bomb.transform.SetPositionAndRotation(_firePoint.position, Quaternion.identity);
         bomb.gameObject.SetActive(true);

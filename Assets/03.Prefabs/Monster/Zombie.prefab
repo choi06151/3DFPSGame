@@ -664,7 +664,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f0d2d5c264f9c842a8dc9b0bb335190, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ZombieHitEvent
-  _zombie: {fileID: 0}
+  _zombie: {fileID: 6631878215080481970}
 --- !u!4 &2383501274608801708 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 578376449398627443, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
