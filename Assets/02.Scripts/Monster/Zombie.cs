@@ -38,6 +38,7 @@ public class Zombie : MonoBehaviour,IDamageAble
     private bool _isDead;
 
     private NavMeshAgent _agent;
+    private Animator _animator;
     private Vector3 _startPosition;
     private Vector3 _patrolCenter;
     private Vector3 _patrolTarget;
@@ -53,6 +54,7 @@ public class Zombie : MonoBehaviour,IDamageAble
     {
          _agent=GetComponent<NavMeshAgent>();
          _agent.speed=_moveSpeed;
+         _animator = GetComponentInChildren<Animator>();
         _player=GameObject.FindGameObjectWithTag("Player");
         _patrolCenter = transform.position;
         _startPosition = _patrolCenter;
@@ -62,6 +64,7 @@ public class Zombie : MonoBehaviour,IDamageAble
     // Update is called once per frame
     void Update()
     {
+        UpdateAnimationParameters();
         
         if (GameManager.Instance.GameState != GameState.Playing)
             return;
@@ -105,8 +108,21 @@ public class Zombie : MonoBehaviour,IDamageAble
         
     }
 
+    private void UpdateAnimationParameters()
+    {
+        if (_animator == null)
+            return;
+
+        _animator.SetBool("IsTrace", _state == ZombieState.Trace);
+        _animator.SetBool("IsAttack", _state == ZombieState.Attack);
+        _animator.SetBool("IsComeback", _state == ZombieState.Comeback);
+        _animator.SetBool("IsIdle", _state == ZombieState.Hit || _state == ZombieState.Combat);
+        _animator.SetBool("IsPatrol", _state == ZombieState.Patrol);
+    }
+
     private void Patrol()
     {
+        StopAgent();
         float distance=Vector3.Distance(transform.position,_player.transform.position);
         if (distance <= _detectDistance)
         {
@@ -143,7 +159,8 @@ public class Zombie : MonoBehaviour,IDamageAble
 
     public void Comeback()
     {
-        if (Vector3.Distance(transform.position, _startPosition) < 1f)
+        StopAgent();
+        if (_agent.pathStatus == NavMeshPathStatus.PathComplete)
         {
             Debug.Log($"{_state}->Patrol");
 
@@ -157,6 +174,8 @@ public class Zombie : MonoBehaviour,IDamageAble
 
     public void Attack()
     {
+        
+        StopAgent();
         //공격 사거리 밖으로 플레이어가 이동하면  다시 쫒아간다
         float distance=Vector3.Distance(transform.position,_player.transform.position);
         if (distance >_detectDistance)
@@ -170,20 +189,23 @@ public class Zombie : MonoBehaviour,IDamageAble
         _attackTimer+=Time.deltaTime;
         if (_attackTimer >= _attackInterval)
         {
-            DamageInfo info = new DamageInfo();
-            {
-                info.Value = _attackDamage;
-                
-            }
-            
-            _player.GetComponent<IDamageAble>().TakeDamage(info);
             
             //플레이어 공격
             _attackTimer = 0;
             
         }
     }
-    
+
+    public void CalculateAttackDamage()
+    {
+        DamageInfo info = new DamageInfo();
+        {
+            info.Value = _attackDamage;
+        }
+            
+        _player.GetComponent<IDamageAble>().TakeDamage(info);
+    }
+   
     public void TakeDamage(DamageInfo damageInfo)
     {
         if (_isDead || damageInfo.Value <= 0f)
@@ -202,6 +224,8 @@ public class Zombie : MonoBehaviour,IDamageAble
         if (_health <= 0)
         {
             _isDead = true;
+            if (_animator != null)
+                _animator.SetTrigger("Death");
             StartCoroutine(Death_Coroutine());
             return;
         }
@@ -212,6 +236,8 @@ public class Zombie : MonoBehaviour,IDamageAble
         
         OnDamged?.Invoke();
         _state=ZombieState.Hit;
+        if (_animator != null)
+            _animator.SetTrigger("Hit");
         StartCoroutine(Hit_Coroutine());
 
     }
@@ -221,15 +247,24 @@ public class Zombie : MonoBehaviour,IDamageAble
         yield return new WaitForSeconds(0.5f);
         if (_isDead)
             yield break;
+        StopAgent();
         Debug.Log($"{_state}->Trace");
         _state = ZombieState.Trace;
 
     }
     private IEnumerator Death_Coroutine()
     {
+        StopAgent();
         yield return new WaitForSeconds(0.5f);
+        
         OnDestroy?.Invoke();
         Destroy(gameObject);
 
+    }
+
+    private void StopAgent()
+    {
+        _agent.ResetPath();
+        _agent.velocity = Vector3.zero;
     }
 }

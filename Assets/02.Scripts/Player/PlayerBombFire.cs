@@ -11,6 +11,10 @@ public class PlayerBombFire : MonoBehaviour
     [SerializeField] private float _maxThrowPower = 20f;
     [SerializeField] private float _chargeDuration = 2f;
 
+
+
+    
+    private Player _player;
     private readonly Queue<Bomb> _bombPool = new Queue<Bomb>();
     private int _bombsThrown;
     private float _chargeTime;
@@ -25,12 +29,22 @@ public class PlayerBombFire : MonoBehaviour
             bomb.gameObject.SetActive(false);
             _bombPool.Enqueue(bomb);
         }
+        _player=GetComponent<Player>();
     }
 
     private void Update()
     {
         if (GameManager.Instance.GameState != GameState.Playing)
             return;
+
+
+
+        if (_player.WeaponMode != WeaponMode.Normal)
+        {
+            return;
+        }
+        
+        
         if (_bombsThrown >= MaxBombCount)
         {
             _isCharging = false;

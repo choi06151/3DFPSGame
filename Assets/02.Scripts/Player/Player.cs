@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour, IDamageAble
 {
     [SerializeField] private Slider _healthBar;
-
+    private WeaponMode _weaponMode = WeaponMode.Normal;
+    public WeaponMode WeaponMode => _weaponMode;
     private float _hp;
     public float HP => _hp;
     public event Action OnDamaged;
@@ -16,6 +17,18 @@ public class Player : MonoBehaviour, IDamageAble
         UpdateHealthBar();
     }
 
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _weaponMode = WeaponMode.Sniper;
+        }
+        else if(Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _weaponMode = WeaponMode.Normal;
+        }
+    }
     public void TakeDamage(DamageInfo damageInfo)
     {
         if (_hp <= 0f || damageInfo.Value <= 0f)
