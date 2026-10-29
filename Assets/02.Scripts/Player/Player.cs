@@ -11,6 +11,8 @@ public class Player : MonoBehaviour, IDamageAble
     private float _hp;
     public float HP => _hp;
     public event Action OnDamaged;
+    public event Action OnSniperMode;
+    public event Action OnNormalMode;
     private void Awake()
     {
         _hp = PlayerStat.MaxHealth;
@@ -20,13 +22,20 @@ public class Player : MonoBehaviour, IDamageAble
 
     private void Update()
     {
+        if (GameManager.Instance.GameState != GameState.Playing)
+        {
+            return;
+        }
+        
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             _weaponMode = WeaponMode.Sniper;
+            OnSniperMode.Invoke();
         }
         else if(Input.GetKeyDown(KeyCode.Alpha2))
         {
             _weaponMode = WeaponMode.Normal;
+            OnNormalMode.Invoke();
         }
     }
     public void TakeDamage(DamageInfo damageInfo)

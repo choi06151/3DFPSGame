@@ -1,8 +1,13 @@
 using System.Collections;
+using System;
 using UnityEngine;
 
 public class PlayerGunFire : MonoBehaviour
 {
+    public int AmmoInMagazine => _ammoInMagazine;
+    public int MagazineSize => _magazineSize;
+    public event Action<int, int> OnAmmoChanged;
+
     [Header("총알 이펙트")]
     [SerializeField]private ParticleSystem _hitEffectPrefab;
 
@@ -10,6 +15,9 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField, Min(0.01f)] private float _trajectoryDuration = 0.2f;
     [SerializeField, Min(0.001f)] private float _trajectoryWidth = 0.025f;
     [SerializeField] private Color _trajectoryColor = new Color(1f, 0.85f, 0.35f, 1f);
+    [SerializeField] private Transform _muzzlePosition;
+    [SerializeField]private GameObject[] _muzzleFlashes;
+    [SerializeField]private float _flashTime = 0.05f;
     
     [Header("수치")]
     [SerializeField] private float _range = 100;
@@ -25,6 +33,8 @@ public class PlayerGunFire : MonoBehaviour
     private bool _isReloading;
     private Material _trajectoryMaterial;
 
+    
+    [SerializeField]private Animator _animator;
     private void Awake()
     {
         var shader = Shader.Find("Sprites/Default");
@@ -39,12 +49,11 @@ public class PlayerGunFire : MonoBehaviour
         if (_trajectoryMaterial != null)
             Destroy(_trajectoryMaterial);
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
+    private void Start()
+    {
+        NotifyAmmoChanged();
+    }
     // Update is called once per frame
     void Update()
     {
@@ -66,6 +75,7 @@ public class PlayerGunFire : MonoBehaviour
             {
                 _ammoInMagazine = _magazineSize;
                 _isReloading = false;
+                NotifyAmmoChanged();
             }
             return;
         }
@@ -75,6 +85,7 @@ public class PlayerGunFire : MonoBehaviour
             _fireTimer = _fireInterval;
             Fire();
             _ammoInMagazine--;
+            NotifyAmmoChanged();
             
         }
         //사용자 왼쪽 버튼 입력 받기
@@ -89,6 +100,10 @@ public class PlayerGunFire : MonoBehaviour
         if (mainCamera == null)
             return;
 
+        
+        _animator.SetTrigger("Shoot");
+
+        CreateMuzzleFlash();
         Transform cameraTransform = mainCamera.transform;
         
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -117,6 +132,11 @@ public class PlayerGunFire : MonoBehaviour
             }
             
         }
+    }
+
+    private void NotifyAmmoChanged()
+    {
+        OnAmmoChanged?.Invoke(_ammoInMagazine, _magazineSize);
     }
 
     private IEnumerator ShowTrajectory(Vector3 startPoint, Vector3 endPoint)
@@ -150,5 +170,14 @@ public class PlayerGunFire : MonoBehaviour
         }
 
         Destroy(lineObject);
+    }
+
+
+    private void CreateMuzzleFlash()
+    {
+        int randomIndex=UnityEngine.Random.Range(0,_muzzleFlashes.Length);
+        GameObject flash=_muzzleFlashes[randomIndex];
+        Instantiate(flash, _muzzlePosition);
+     
     }
 }

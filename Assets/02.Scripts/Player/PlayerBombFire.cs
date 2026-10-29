@@ -1,9 +1,14 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class PlayerBombFire : MonoBehaviour
 {
     private const int MaxBombCount = 10;
+
+    public int BombsRemaining => MaxBombCount - _bombsThrown;
+    public int MaximumBombCount => MaxBombCount;
+    public event Action<int, int> OnBombCountChanged;
 
     [SerializeField] private Transform _firePoint;
     [SerializeField] private Bomb _bombPrefab;
@@ -30,6 +35,7 @@ public class PlayerBombFire : MonoBehaviour
             _bombPool.Enqueue(bomb);
         }
         _player=GetComponent<Player>();
+        NotifyBombCountChanged();
     }
 
     private void Update()
@@ -80,6 +86,7 @@ public class PlayerBombFire : MonoBehaviour
         float throwPower = Mathf.Lerp(_minThrowPower, _maxThrowPower, chargeRatio);
         bomb.Throw(Camera.main.transform.forward, throwPower);
         _bombsThrown++;
+        NotifyBombCountChanged();
     }
 
     private void ReturnBombToPool(Bomb bomb)
@@ -87,5 +94,10 @@ public class PlayerBombFire : MonoBehaviour
         bomb.gameObject.SetActive(false);
         bomb.transform.SetParent(transform);
         _bombPool.Enqueue(bomb);
+    }
+
+    private void NotifyBombCountChanged()
+    {
+        OnBombCountChanged?.Invoke(BombsRemaining, MaximumBombCount);
     }
 }
