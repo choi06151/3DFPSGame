@@ -3085,6 +3085,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerKnifeAttack
   _animator: {fileID: 2065787204}
+  _cameraSwitcher: {fileID: 0}
+  _range: 5
+  _damage: 20
+  _attackInterval: 0.6
+  _slashEffect: {fileID: 5313456068782518071, guid: 50f1354827c77ef4b99c4dca0ee3411d, type: 3}
+  _slashPoint: {fileID: 113585475}
 --- !u!1 &1005173944
 GameObject:
   m_ObjectHideFlags: 0
