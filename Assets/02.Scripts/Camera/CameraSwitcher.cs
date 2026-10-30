@@ -27,6 +27,8 @@ public class CameraSwitcher : MonoBehaviour
     [SerializeField] private float _lookAtHeight = 1f;
 
     private CameraView _currentView;
+    private CameraView _viewBeforeMelee;
+    private bool _meleeViewActive;
 
     private void Awake()
     {
@@ -58,11 +60,32 @@ public class CameraSwitcher : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.V))
+        if (!_meleeViewActive && Input.GetKeyDown(KeyCode.V))
         {
             _currentView = (CameraView)(((int)_currentView + 1) % System.Enum.GetValues(typeof(CameraView)).Length);
             ApplyView();
         }
+    }
+
+    public void BeginMeleeView()
+    {
+        if (!_meleeViewActive)
+        {
+            _viewBeforeMelee = _currentView;
+            _meleeViewActive = true;
+        }
+
+        _currentView = CameraView.ThirdPerson;
+        ApplyView();
+    }
+
+    public void EndMeleeView()
+    {
+        if (!_meleeViewActive) return;
+
+        _currentView = _viewBeforeMelee;
+        _meleeViewActive = false;
+        ApplyView();
     }
 
     private void LateUpdate()
